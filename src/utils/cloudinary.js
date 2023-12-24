@@ -9,7 +9,6 @@ cloudinary.config({
 });
 
 
-
 const uploadOnCloudinary = async (localFilePath) => {
   try {
     if (!localFilePath) {
@@ -20,15 +19,16 @@ const uploadOnCloudinary = async (localFilePath) => {
       resource_type: "auto",
     });
 
+
+    // Cleanup: Remove the locally saved temporary file
     fs.unlinkSync(localFilePath);
 
     return response;
   } catch (error) {
-    
+    // Handle errors more explicitly if needed
     console.error("Error uploading to Cloudinary:", error);
 
-    fs.unlinkSync(localFilePath);
-
+    // If an error occurred, do not unlink the local file here
     return null;
   }
 };
