@@ -1,36 +1,47 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 
-
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-
 const uploadOnCloudinary = async (localFilePath) => {
-  try {
-    if (!localFilePath) {
-      return null;
+    try {
+        if (!localFilePath) {
+            return null;
+        }
+
+        const response = await cloudinary.uploader.upload(localFilePath, {
+            resource_type: "auto",
+        });
+
+        // Cleanup: Remove the locally saved temporary file
+        fs.unlinkSync(localFilePath);
+
+        return response;
+    } catch (error) {
+        // Handle errors more explicitly if needed
+        console.error("Error uploading to Cloudinary:", error);
+
+        // If an error occurred, do not unlink the local file here
+        return null;
     }
+};
 
-    const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto",
-    });
+const deleteOnCloudinary = async (public_id, resource_type="image") => {
+  try {
+      if (!public_id) return null;
 
-
-    // Cleanup: Remove the locally saved temporary file
-    fs.unlinkSync(localFilePath);
-
-    return response;
+      //delete file from cloudinary
+      const result = await cloudinary.uploader.destroy(public_id, {
+          resource_type: `${resource_type}`
+      });
   } catch (error) {
-    // Handle errors more explicitly if needed
-    console.error("Error uploading to Cloudinary:", error);
-
-    // If an error occurred, do not unlink the local file here
-    return null;
+      return error;
+      console.log("delete on cloudinary failed", error);
   }
 };
 
-export { uploadOnCloudinary };
+export { uploadOnCloudinary,deleteOnCloudinary };
